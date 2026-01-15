@@ -9,6 +9,8 @@ __pycache__/
 *$py.class
 *.so
 .Python
+*.csv
+*.xsls
 
 # Streamlit
 .streamlit/
@@ -22,4 +24,4 @@ __pycache__/
 
 # OS
 .DS_Store
-Thumbs.db
+Thumbs.dbdata/raw/meteo.csv
