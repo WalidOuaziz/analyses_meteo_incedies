@@ -428,21 +428,7 @@ with col2:
 
 # ==================== CONTACT & SUPPORT ====================
 
-st.markdown("---")
-st.header("📞 Support & Contact")
 
-st.markdown("""
-### Questions ou Retours?
-- **Email**: support@meteo-france.gouv.fr
-- **Documentation**: [Lire la documentation complète](#)
-- **Bug Report**:  Signalez les problèmes sur la page concernée
-
-### Ressources Utiles
-- [Gouvernement France - Risques Naturels](https://www.gouvernement.fr)
-- [Météo France Incendies](https://www.meteo. fr)
-- [Prévention Forêt France](https://www.forets.gouv.fr)
-
-""")
 
 # ==================== FOOTER ====================
 

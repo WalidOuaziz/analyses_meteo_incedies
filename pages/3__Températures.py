@@ -854,14 +854,14 @@ def main():
                 with col1:
                     st.metric(
                         "Tendance annuelle",
-                        f"{tendance_an: +.3f} {UNITS.get(variable_select, '')}/an",
+                        f"{tendance_an:+.3f} {UNITS.get(variable_select, '')}/an",
                         delta=None
                     )
                 
                 with col2:
                     st.metric(
                         "Tendance totale",
-                        f"{tendance_totale: +.2f} {UNITS.get(variable_select, '')}",
+                        f"{tendance_totale:+.2f} {UNITS.get(variable_select, '')}",
                         delta=f"sur {df_yearly['annee'].max() - df_yearly['annee'].min()} ans"
                     )
                 
@@ -869,7 +869,7 @@ def main():
                     variation_pct = (tendance_totale / df_yearly[variable_select].mean() * 100) if df_yearly[variable_select].mean() != 0 else 0
                     st.metric(
                         "Variation",
-                        f"{variation_pct: +.1f}%",
+                        f"{variation_pct:+.1f}%",
                         delta="par rapport à la moyenne"
                     )
                 
