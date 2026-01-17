@@ -26,4 +26,3 @@ __pycache__/
 .DS_Store
 Thumbs.dbdata/raw/meteo.csv
 data/raw/*.xlsx
-*.csv
