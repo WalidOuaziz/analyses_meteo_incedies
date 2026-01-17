@@ -10,7 +10,7 @@ __pycache__/
 *.so
 .Python
 *.xsls
-
+meteo.csv
 # Streamlit
 .streamlit/
 
