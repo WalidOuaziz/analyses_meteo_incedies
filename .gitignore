@@ -10,7 +10,7 @@ __pycache__/
 *.so
 .Python
 *.xsls
-meteo.csv
+
 # Streamlit
 .streamlit/
 
@@ -23,5 +23,5 @@ meteo.csv
 
 # OS
 .DS_Store
-Thumbs.dbdata/raw/meteo.csv
+
 data/raw/*.xlsx
