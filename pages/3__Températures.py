@@ -33,7 +33,7 @@ st.set_page_config(
 @st.cache_resource
 def load_data_cached():
     """Charge les données une seule fois et les met en cache"""
-    return load_data("data/raw/meteo.csv")
+    return load_data("data/raw/meteo_2000_2020.csv")
 
 # ==================== STATIONS PACA ====================
 
@@ -518,7 +518,7 @@ def main():
         df_full = load_data_cached()
     
     if df_full.empty:
-        st.error("❌ Fichier CSV introuvable:  data/raw/meteo.csv")
+        st.error("❌ Fichier CSV introuvable:  data/raw/meteo_2000_2020.csv")
         st.stop()
     
     # Extraction des années disponibles
