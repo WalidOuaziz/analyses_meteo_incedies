@@ -1,0 +1,242 @@
+================================================================================
+    DOCUMENTATION - ÉCHANTILLONNAGE DES DONNÉES
+================================================================================
+
+Date de création : Janvier 2026
+Objectif : Optimisation pour déploiement Streamlit Cloud
+
+
+================================================================================
+1. DONNÉES MÉTÉOROLOGIQUES
+================================================================================
+
+AVANT (meteo.parquet) :
+------------------------
+📏 Taille fichier     : 9.94 MB
+📊 Nombre de lignes   : 1,202,311 enregistrements
+📅 Période couverte   : 1956 → 2023 (67 ans)
+⚠️  Problème          : Trop volumineux pour GitHub et Streamlit Cloud
+
+
+APRÈS (meteo_sample.parquet) :
+-------------------------------
+📏 Taille fichier     : 0.91 MB
+📊 Nombre de lignes   : 51,423 enregistrements
+📅 Période couverte   : 2018 → 2023 (6 ans récents)
+📉 Réduction          : 95.7% (de la taille originale)
+✅ Résultat           : Fichier léger, déploiement possible
+
+
+CRITÈRE DE FILTRAGE :
+---------------------
+Les données sont filtrées pour ne garder que les années >= 2018
+
+Code utilisé :
+    df['year'] = pd.to_datetime(df['AAAAMMJJ'], format='%Y%m%d').dt.year
+    df_meteo_sample = df[df['year'] >= 2018]
+
+
+================================================================================
+2. DONNÉES INCENDIES
+================================================================================
+
+AVANT (incendies.parquet) :
+----------------------------
+📏 Taille fichier     : 3.23 MB
+📊 Nombre de lignes   : 118,605 enregistrements
+📅 Période couverte   : 1973 → 2022 (49 ans)
+⚠️  Problème          : Limite acceptable mais réduction possible
+
+
+APRÈS (incendies_sample.parquet) :
+-----------------------------------
+📏 Taille fichier     : 1.95 MB
+📊 Nombre de lignes   : 59,302 enregistrements
+📅 Période couverte   : 2010 → 2022 (13 ans récents)
+📉 Réduction          : 50% (de la taille originale)
+✅ Résultat           : Meilleure performance de chargement
+
+
+CRITÈRE DE FILTRAGE :
+---------------------
+Les données sont filtrées pour ne garder que les années >= 2010
+
+Code utilisé :
+    df_incendies_sample = df[df['An'] >= 2010]
+
+
+================================================================================
+3. IMPACT SUR LES ANALYSES
+================================================================================
+
+✅ CE QUI RESTE DISPONIBLE :
+-----------------------------
+• Toutes les tendances climatiques récentes
+• Toutes les stations météorologiques actives
+• Tous les départements (13 Bouches-du-Rhône, 05 Hautes-Alpes, etc.)
+• Toutes les variables mesurées :
+  - Températures (min, max, moyenne)
+  - Précipitations
+  - Vent (vitesse, direction)
+  - Autres paramètres météo
+• Analyses saisonnières complètes (été, hiver, etc.)
+• Comparaisons géographiques entre stations
+• Événements extrêmes récents
+
+
+⚠️ CE QUI EST PERDU :
+----------------------
+• Données historiques anciennes :
+  - Avant 2018 pour les données météo
+  - Avant 2010 pour les données incendies
+• Tendances climatiques à très long terme (50+ ans)
+• Événements extrêmes historiques :
+  - Canicule de 1976
+  - Tempête de 1999
+  - Autres événements avant 2010-2018
+• Analyses de l'évolution climatique sur plusieurs décennies
+
+
+================================================================================
+4. JUSTIFICATION DE L'ÉCHANTILLONNAGE
+================================================================================
+
+🎯 OBJECTIF PRINCIPAL :
+-----------------------
+Permettre le déploiement de l'application sur Streamlit Cloud
+
+🚫 CONTRAINTES TECHNIQUES :
+---------------------------
+• Limite GitHub        : 100 MB total pour le dépôt
+• Recommandation       : < 10 MB par fichier individuel
+• Streamlit Cloud      : Ne peut accéder qu'aux fichiers versionnés sur GitHub
+• Performance Web      : Temps de chargement réduits pour meilleure UX
+
+
+🔬 LOGIQUE DE SÉLECTION :
+-------------------------
+1. DONNÉES RÉCENTES = PLUS PERTINENTES
+   Les 6 dernières années (2018-2023) capturent :
+   - Les effets actuels du changement climatique
+   - Les tendances météo récentes
+   - Les événements extrêmes modernes
+
+2. PÉRIODE SUFFISANTE POUR ANALYSES
+   - 6 ans de météo = Assez pour tendances saisonnières
+   - 13 ans d'incendies = Historique statistiquement significatif
+
+3. COMPROMIS OPTIMAL
+   - Taille fichier : Acceptable pour GitHub et Streamlit Cloud
+   - Qualité analyses : Maintenue pour usages principaux
+   - Performance : Chargement 10x plus rapide
+
+
+================================================================================
+5. FICHIERS ET STOCKAGE
+================================================================================
+
+FICHIERS SUR GITHUB (versionnés) :
+-----------------------------------
+✅ meteo_sample.parquet        (0.91 MB) → Utilisé par l'application déployée
+✅ incendies_sample.parquet    (1.95 MB) → Utilisé par l'application déployée
+✅ Shapefiles départements     (~3 MB)   → Données géographiques
+✅ Fichiers de code Python     (~500 KB)
+
+
+FICHIERS EN LOCAL (non versionnés) :
+-------------------------------------
+💾 meteo.parquet               (9.94 MB) → Données complètes 1956-2023
+💾 incendies.parquet           (3.23 MB) → Données complètes 1973-2022
+💾 *.xlsx (fichiers Excel)     (30+ MB)  → Sources originales
+
+Ces fichiers sont exclus via .gitignore :
+    data/raw/meteo.parquet
+    data/raw/incendies.parquet
+    data/raw/*.xlsx
+    data/raw/meteo.csv
+    data/raw/incendies.csv
+
+
+AVANTAGE :
+----------
+Vous conservez TOUTES les données complètes en local pour analyses approfondies,
+tout en déployant une version optimisée sur le cloud !
+
+
+================================================================================
+6. UTILISATION DANS LE CODE
+================================================================================
+
+FICHIERS MODIFIÉS :
+-------------------
+• utils/data_loader.py
+• pages/1__Carte_Interactive.py
+• pages/3__Températures.py
+• pages/4__Précipitations.py
+• pages/5__Analyse_du_Vent.py
+• pages/6__Comparaisons_Géographiques.py
+• pages/7__Événements_Extrêmes.py
+• pages/Analyse_Incendies.py
+
+
+CHANGEMENTS APPLIQUÉS :
+-----------------------
+Avant :
+    df = load_data("data/raw/meteo.parquet")
+    df = pd.read_parquet("data/raw/incendies.parquet")
+
+Après :
+    df = load_data("data/raw/meteo_sample.parquet")
+    df = pd.read_parquet("data/raw/incendies_sample.parquet")
+
+
+================================================================================
+7. SCRIPT DE GÉNÉRATION
+================================================================================
+
+FICHIER : create_sample_data.py
+
+COMMANDE D'EXÉCUTION :
+    python create_sample_data.py
+
+FONCTION :
+    Génère automatiquement les fichiers *_sample.parquet à partir des fichiers
+    complets. Peut être réexécuté si vous mettez à jour les données sources.
+
+
+================================================================================
+8. DÉPLOIEMENT STREAMLIT CLOUD
+================================================================================
+
+ÉTAPES POUR DÉPLOYER :
+----------------------
+1. Vérifier que les fichiers *_sample.parquet existent
+2. Vérifier que .gitignore exclut les gros fichiers
+3. Commit et push vers GitHub :
+   
+   git add .
+   git commit -m "Optimisation données pour déploiement Cloud"
+   git push
+
+4. Sur Streamlit Cloud :
+   - Connecter le dépôt GitHub
+   - Sélectionner Home.py comme fichier principal
+   - Déployer !
+
+
+FICHIERS REQUIS SUR GITHUB :
+-----------------------------
+✅ Home.py
+✅ requirements.txt (avec pyarrow>=12.0.0)
+✅ pages/*.py
+✅ utils/*.py
+✅ components/*.py
+✅ data/raw/meteo_sample.parquet
+✅ data/raw/incendies_sample.parquet
+✅ data/raw/dep_05/*.shp (shapefiles)
+✅ data/raw/dep_13/*.shp (shapefiles)
+
+
+================================================================================
+FIN DE LA DOCUMENTATION
+================================================================================
