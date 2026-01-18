@@ -10,7 +10,7 @@ from pathlib import Path
 from .constants import NUMERIC_COLUMNS, REGIONS_FRANCE, MONTHS_FR, SEASONS
 
 @st.cache_data(show_spinner=False, ttl=3600)  # Cache 1 heure
-def load_data(filepath: str = "data/raw/meteo.parquet", 
+def load_data(filepath: str = "data/raw/meteo_sample.parquet", 
               columns: list = None, 
               years: list = None,
               sample_frac: float = None) -> pd.DataFrame:

@@ -40,7 +40,7 @@ st.markdown(get_page_style(), unsafe_allow_html=True)
 def load_data_cached():
     """Charge les données une seule fois et les met en cache"""
     with st.spinner('⏳ Chargement des données...'):
-        return load_data("data/raw/meteo.parquet")
+        return load_data("data/raw/meteo_sample.parquet")
 
 # ==================== FONCTIONS AUXILIAIRES ====================
 

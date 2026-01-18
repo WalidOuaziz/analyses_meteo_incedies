@@ -43,7 +43,7 @@ def load_data_optimized(years=None, stations=None):
                      'TN', 'TX', 'TM', 'RR', 'FFM', 'FXY', 'DXY']
     
     with st.spinner('⏳ Chargement optimisé...'):
-        df = load_data("data/raw/meteo.parquet", columns=essential_cols, years=years)
+        df = load_data("data/raw/meteo_sample.parquet", columns=essential_cols, years=years)
         
         # Filtrer par stations si spécifié
         if stations:

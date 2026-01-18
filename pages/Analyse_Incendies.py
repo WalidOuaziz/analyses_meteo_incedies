@@ -55,7 +55,7 @@ def load_incendies_parquet():
     """Charge le fichier Parquet d'incendies"""
     try:
         with st.spinner('⏳ Chargement des données incendies...'):
-            df = pd.read_parquet("data/raw/incendies.parquet")
+            df = pd.read_parquet("data/raw/incendies_sample.parquet")
         return df
         
     except Exception as e:  

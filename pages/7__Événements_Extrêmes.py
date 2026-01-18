@@ -38,7 +38,7 @@ st.markdown(get_page_style(), unsafe_allow_html=True)
 def load_data_cached():
     """Charge les données une seule fois et les met en cache"""
     with st.spinner('⏳ Chargement des données...'):
-        return load_data("data/raw/meteo.parquet")
+        return load_data("data/raw/meteo_sample.parquet")
 
 # ==================== DÉFINITION DES SEUILS ====================
 
@@ -457,7 +457,7 @@ def main():
         df = load_data_cached()
     
     if df.empty:
-        st.error("❌ Fichier CSV introuvable:   data/raw/meteo.csv")
+        st.error("❌ Fichier Parquet introuvable:   data/raw/meteo_sample.parquet")
         st.stop()
     
     # ==================== FILTRES ====================
