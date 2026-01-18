@@ -24,4 +24,10 @@ __pycache__/
 # OS
 .DS_Store
 
+# Fichiers de données volumineux (utiliser les versions *_sample.parquet pour le déploiement)
 data/raw/*.xlsx
+data/raw/meteo.parquet
+data/raw/incendies.parquet
+data/raw/meteo.csv
+data/raw/incendies.csv
+data/processed/
