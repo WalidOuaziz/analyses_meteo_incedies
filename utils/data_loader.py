@@ -9,13 +9,20 @@ from datetime import datetime
 from pathlib import Path
 from .constants import NUMERIC_COLUMNS, REGIONS_FRANCE, MONTHS_FR, SEASONS
 
-@st.cache_data(show_spinner="🔄 Chargement des données météo...")
-def load_data(filepath: str = "data/raw/meteo.csv") -> pd.DataFrame:
+@st.cache_data(show_spinner=False, ttl=3600)  # Cache 1 heure
+def load_data(filepath: str = "data/raw/meteo.parquet", 
+              columns: list = None, 
+              years: list = None,
+              sample_frac: float = None) -> pd.DataFrame:
     """
-    Charge et prépare les données météorologiques depuis le fichier CSV
+    Charge et prépare les données météorologiques depuis le fichier Parquet
+    OPTIMISÉ pour données massives
     
     Args:
-        filepath: Chemin vers le fichier CSV
+        filepath: Chemin vers le fichier Parquet
+        columns: Liste de colonnes à charger (None = toutes)
+        years: Liste d'années à filtrer (None = toutes)
+        sample_frac: Fraction de données à échantillonner (0.1 = 10%)
         
     Returns:
         DataFrame pandas avec les données nettoyées et enrichies
@@ -24,19 +31,21 @@ def load_data(filepath: str = "data/raw/meteo.csv") -> pd.DataFrame:
         # Vérifier que le fichier existe
         if not Path(filepath).exists():
             st.error(f"❌ Fichier non trouvé : {filepath}")
-            st.info("📁 Placez votre fichier CSV dans le dossier data/raw/")
+            st.info("📁 Placez votre fichier Parquet dans le dossier data/raw/")
             return pd.DataFrame()
         
-        # Charger le CSV avec le bon séparateur
-        df = pd.read_csv(
-            filepath,
-            sep=';',
-            encoding='utf-8',
-            low_memory=False
-        )
+        # Charger seulement les colonnes nécessaires pour économiser mémoire
+        df = pd.read_parquet(filepath, columns=columns)
         
-        # Afficher les statistiques de chargement
-        st.success(f"✅ {len(df):,} lignes chargées depuis {filepath}")
+        # Filtrer par années si spécifié
+        if years and 'AAAAMMJJ' in df.columns:
+            df['temp_year'] = df['AAAAMMJJ'].astype(str).str[:4].astype(int)
+            df = df[df['temp_year'].isin(years)]
+            df = df.drop('temp_year', axis=1)
+        
+        # Échantillonnage si demandé
+        if sample_frac and 0 < sample_frac < 1:
+            df = df.sample(frac=sample_frac, random_state=42)
         
         # Convertir les types de données
         df = convert_data_types(df)
@@ -47,11 +56,27 @@ def load_data(filepath: str = "data/raw/meteo.csv") -> pd.DataFrame:
         # Gérer les données manquantes
         df = handle_missing_values(df)
         
+        # Optimiser la mémoire
+        df = reduce_memory_usage(df)
+        
         return df
         
     except Exception as e:
         st.error(f"❌ Erreur lors du chargement des données : {str(e)}")
         return pd.DataFrame()
+
+
+def reduce_memory_usage(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Réduit l'utilisation mémoire du DataFrame
+    """
+    for col in df.select_dtypes(include=['float']).columns:
+        df[col] = pd.to_numeric(df[col], downcast='float')
+    
+    for col in df.select_dtypes(include=['int']).columns:
+        df[col] = pd.to_numeric(df[col], downcast='integer')
+    
+    return df
 
 
 def convert_data_types(df: pd.DataFrame) -> pd.DataFrame:

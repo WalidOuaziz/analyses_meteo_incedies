@@ -4,8 +4,13 @@ Description complète du projet et navigation
 """
 
 import streamlit as st
-import pandas as pd
 from datetime import datetime
+import sys
+from pathlib import Path
+
+# Import du style personnalisé
+sys.path.append(str(Path(__file__).parent))
+from utils.styles import get_page_style
 
 # ==================== CONFIGURATION PAGE ====================
 
@@ -17,36 +22,7 @@ st.set_page_config(
 
 # ==================== CSS PERSONNALISÉ ====================
 
-st.markdown("""
-<style>
-    .main {
-        padding: 2rem;
-    }
-    .card {
-        background-color: #f0f2f6;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        margin: 1rem 0;
-        border-left: 4px solid #1f77b4;
-    }
-    .card-success {
-        border-left-color: #2ca02c;
-    }
-    .card-warning {
-        border-left-color: #ff7f0e;
-    }
-    .card-danger {
-        border-left-color: #d62728;
-    }
-    . feature-box {
-        background:  linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 0.5rem;
-        margin: 1rem 0;
-    }
-</style>
-""", unsafe_allow_html=True)
+st.markdown(get_page_style(), unsafe_allow_html=True)
 
 # ==================== HEADER ====================
 

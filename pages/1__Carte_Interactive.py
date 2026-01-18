@@ -20,6 +20,8 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from utils.data_loader import load_data
 from utils.constants import COLUMN_DESCRIPTIONS, UNITS
+from utils.styles import get_page_style
+from utils.loading import display_map, display_chart
 
 # ==================== CONFIGURATION PAGE ====================
 
@@ -29,12 +31,16 @@ st.set_page_config(
     layout="wide"
 )
 
+# Appliquer le style
+st.markdown(get_page_style(), unsafe_allow_html=True)
+
 # ==================== CACHE SESSION ====================
 
 @st.cache_resource
 def load_data_cached():
     """Charge les données une seule fois et les met en cache"""
-    return load_data("data/raw/meteo.csv")
+    with st.spinner('⏳ Chargement des données...'):
+        return load_data("data/raw/meteo.parquet")
 
 # ==================== FONCTIONS AUXILIAIRES ====================
 
@@ -551,7 +557,7 @@ def main():
         
         type_viz = st.radio(
             "Type de carte",
-            options=['Markers', 'Heatmap', 'Hybride'],
+            options=['Heatmap','Markers','Hybride'],
             horizontal=True
         )
     

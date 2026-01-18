@@ -14,8 +14,15 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import numpy as np
 from datetime import datetime
+import sys
+from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
+
+# Import du style personnalisé
+sys.path.append(str(Path(__file__).parent.parent))
+from utils.styles import get_page_style
+from utils.loading import display_chart, display_map
 
 # ==================== CONFIGURATION PAGE ====================
 
@@ -25,14 +32,18 @@ st.set_page_config(
     layout="wide"
 )
 
+# Appliquer le style
+st.markdown(get_page_style(), unsafe_allow_html=True)
+
 # ==================== CACHE SESSION ====================
 
 @st.cache_resource
 def load_shapefiles():
     """Charge les fichiers shapefiles"""
     try:
-        gdf_13 = gpd.read_file("data/raw/dep_13/communes_13_with_data_for_carte_danger_incendie.shp")
-        gdf_05 = gpd.read_file("data/raw/dep_05/communes_05_with_data_for_carte_danger_incendie.shp")
+        with st.spinner('⏳ Chargement des cartes...'):
+            gdf_13 = gpd.read_file("data/raw/dep_13/communes_13_with_data_for_carte_danger_incendie.shp")
+            gdf_05 = gpd.read_file("data/raw/dep_05/communes_05_with_data_for_carte_danger_incendie.shp")
         return gdf_13, gdf_05
     except Exception as e:  
         st.error(f"Erreur lors du chargement des shapefiles: {e}")
@@ -40,18 +51,15 @@ def load_shapefiles():
 
 
 @st.cache_resource
-def load_incendies_csv():
-    """Charge le fichier CSV d'incendies"""
-    try:  
-        df = pd.read_csv(
-            "data/raw/incendies.csv", 
-            sep=';', 
-            encoding='latin-1'
-        )
+def load_incendies_parquet():
+    """Charge le fichier Parquet d'incendies"""
+    try:
+        with st.spinner('⏳ Chargement des données incendies...'):
+            df = pd.read_parquet("data/raw/incendies.parquet")
         return df
         
     except Exception as e:  
-        st.error(f"❌ Erreur lors du chargement du CSV:  {e}")
+        st.error(f"❌ Erreur lors du chargement du fichier:  {e}")
         return None
 
 # ==================== FONCTIONS DE TRAITEMENT ====================
@@ -556,7 +564,7 @@ def main():
         st.stop()
     
     with st.spinner("📊 Chargement incendies..."):
-        incendies_df = load_incendies_csv()
+        incendies_df = load_incendies_parquet()
     
     gdf = prepare_geodata(gdf_13, gdf_05)
     if incendies_df is not None:  

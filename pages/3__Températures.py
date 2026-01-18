@@ -19,6 +19,8 @@ sys.path.append(str(Path(__file__).parent.parent))
 from utils.data_loader import load_data
 from utils.preprocessing import filter_by_altitude
 from utils.constants import COLUMN_DESCRIPTIONS, UNITS, MONTHS_FR
+from utils.styles import get_page_style
+from utils.loading import display_chart
 
 # ==================== CONFIGURATION PAGE ====================
 
@@ -28,12 +30,16 @@ st.set_page_config(
     layout="wide"
 )
 
+# Appliquer le style
+st.markdown(get_page_style(), unsafe_allow_html=True)
+
 # ==================== CACHE SESSION ====================
 
 @st.cache_resource
 def load_data_cached():
     """Charge les données une seule fois et les met en cache"""
-    return load_data("data/raw/meteo_2000_2020.csv")
+    with st.spinner('⏳ Chargement des données...'):
+        return load_data("data/raw/meteo.parquet")
 
 # ==================== STATIONS PACA ====================
 
@@ -518,7 +524,7 @@ def main():
         df_full = load_data_cached()
     
     if df_full.empty:
-        st.error("❌ Fichier CSV introuvable:  data/raw/meteo_2000_2020.csv")
+        st.error("❌ Fichier CSV introuvable:  data/raw/meteo.csv")
         st.stop()
     
     # Extraction des années disponibles
@@ -707,7 +713,7 @@ def main():
         
         fig_annual = create_evolution_annuelle(df, variable_select)
         if fig_annual:
-            st.plotly_chart(fig_annual, use_container_width=True)
+            display_chart(fig_annual, "⏳ Génération du graphique...", use_container_width=True)
         
         col1, col2 = st.columns(2)
         
@@ -715,13 +721,13 @@ def main():
             st.markdown("#### Anomalies Climatiques")
             fig_anom = create_anomalies_chart(df, variable_select)
             if fig_anom: 
-                st.plotly_chart(fig_anom, use_container_width=True)
+                display_chart(fig_anom, "⏳ Calcul des anomalies...", use_container_width=True)
         
         with col2:
             st.markdown("#### Comparaison par Décennie")
             fig_decades = create_comparison_decades(df, variable_select)
             if fig_decades:
-                st.plotly_chart(fig_decades, use_container_width=True)
+                display_chart(fig_decades, "⏳ Analyse par décennie...", use_container_width=True)
     
     with tab2:
         st.subheader("Cycles Mensuels")

@@ -19,6 +19,8 @@ sys.path.append(str(Path(__file__).parent.parent))
 from utils.data_loader import load_data
 from utils.preprocessing import filter_by_altitude
 from utils.constants import COLUMN_DESCRIPTIONS, UNITS, MONTHS_FR
+from utils.styles import get_page_style
+from utils.loading import display_chart
 
 # ==================== CONFIGURATION PAGE ====================
 
@@ -28,12 +30,26 @@ st.set_page_config(
     layout="wide"
 )
 
+# Appliquer le style
+st.markdown(get_page_style(), unsafe_allow_html=True)
+
 # ==================== CACHE SESSION ====================
 
-@st.cache_resource
-def load_data_cached():
-    """Charge les données une seule fois et les met en cache"""
-    return load_data("data/raw/meteo_2000_2020.csv")
+@st.cache_data(ttl=3600)
+def load_data_optimized(years=None, stations=None):
+    """Charge les données optimisées pour cette page"""
+    # Charger seulement les colonnes nécessaires
+    essential_cols = ['NUM_POSTE', 'NOM_USUEL', 'LAT', 'LON', 'ALTI', 'AAAAMMJJ',
+                     'TN', 'TX', 'TM', 'RR', 'FFM', 'FXY', 'DXY']
+    
+    with st.spinner('⏳ Chargement optimisé...'):
+        df = load_data("data/raw/meteo.parquet", columns=essential_cols, years=years)
+        
+        # Filtrer par stations si spécifié
+        if stations:
+            df = df[df['NOM_USUEL'].isin(stations)]
+        
+        return df
 
 # ==================== STATIONS PACA ====================
 
@@ -70,12 +86,20 @@ STATIONS_PACA = [
 # ==================== FONCTIONS DE VISUALISATION ====================
 
 def create_comparison_stations_line(df, stations, variable, periode_affichage):
-    """Comparaison des stations par ligne"""
+    """Comparaison des stations par ligne (OPTIMISÉ)"""
     if variable not in df.columns or 'annee' not in df.columns:
         return None
     
     df_filtered = df[df['NOM_USUEL'].isin(stations)].copy()
+    
+    # Agrégation par année pour réduire les points
     df_yearly = df_filtered.groupby(['annee', 'NOM_USUEL'])[variable].mean().reset_index()
+    
+    # Limiter le nombre de stations si trop nombreuses
+    if len(stations) > 10:
+        top_stations = df_yearly.groupby('NOM_USUEL')[variable].mean().nlargest(10).index
+        df_yearly = df_yearly[df_yearly['NOM_USUEL'].isin(top_stations)]
+        st.info(f"ℹ️ Affichage des 10 stations avec les valeurs les plus élevées")
     
     fig = px.line(
         df_yearly,
@@ -88,10 +112,18 @@ def create_comparison_stations_line(df, stations, variable, periode_affichage):
             variable: f'{COLUMN_DESCRIPTIONS.get(variable, variable)} ({UNITS.get(variable, "")})',
             'NOM_USUEL': 'Station'
         },
-        markers=True
+        markers=True,
+        render_mode='webgl'  # Accélération GPU
     )
     
-    fig.update_layout(height=500, hovermode='x unified', template='plotly_white')
+    fig.update_layout(
+        height=500, 
+        hovermode='x unified', 
+        template='plotly_white',
+        showlegend=True,
+        legend=dict(orientation="v", yanchor="top", y=1, xanchor="left", x=1.02)
+    )
+    fig.layout.transition = {'duration': 0}  # Désactiver animations
     
     return fig
 
@@ -438,18 +470,34 @@ def main():
     st.title("🗺️ Comparaison Géographique")
     st.markdown("**Analyse comparative multi-stations et multi-variables**")
     
+    # ==================== MODE PERFORMANCE ====================
+    
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### ⚡ Performance")
+    
+    perf_mode = st.sidebar.toggle("Mode Rapide", value=True, help="Charge 5 dernières années au lieu de toutes")
+    
+    if perf_mode:
+        default_years = list(range(2018, 2024))  # 2018-2023
+        st.sidebar.success("✅ Mode rapide: 2018-2023")
+    else:
+        default_years = None
+        st.sidebar.warning("⚠️ Toutes les années (lent)")
+    
     # ==================== CHARGEMENT DONNÉES ====================
     
-    with st.spinner("📊 Chargement des données..."):
-        df_full = load_data_cached()
+    df_full = load_data_optimized(years=default_years)
     
     if df_full.empty:
-        st.error("❌ Fichier CSV introuvable:  data/raw/meteo_2000_2020.csv")
+        st.error("❌ Impossible de charger les données")
         st.stop()
     
     # Extraction des années disponibles
     annee_min = int(df_full['annee'].min())
     annee_max = int(df_full['annee'].max())
+    
+    # Info performance
+    st.caption(f"📊 {len(df_full):,} lignes chargées | Période: {annee_min}-{annee_max}")
     
     # ==================== FILTRES ====================
     
